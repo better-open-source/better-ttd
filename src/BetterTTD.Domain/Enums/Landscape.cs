@@ -1,4 +1,4 @@
-﻿namespace BetterTTD.Coan.Enums
+﻿namespace BetterTTD.Domain.Enums
 {
     public enum Landscape
     {

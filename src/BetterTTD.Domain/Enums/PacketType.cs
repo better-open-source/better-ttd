@@ -1,4 +1,6 @@
-﻿namespace BetterTTD.Coan.Enums
+﻿using System.Text;
+
+namespace BetterTTD.Domain.Enums
 {
     public enum PacketType
     {
@@ -42,5 +44,22 @@
         ADMIN_PACKET_SERVER_END              = 127,  /// For internal reference only, mark the end.
 
         INVALID_ADMIN_PACKET                 = 0xFF  /// An invalid marker for admin packets.
+    }
+    
+    public static class ExtensionMethods
+    {
+        public static string GetDispatchName(this PacketType packet)
+        {
+            var name = packet.ToString().Replace("ADMIN_PACKET_", "").ToLower();
+            var result = (int)packet < 100 ? new StringBuilder("send") : new StringBuilder("receive");
+
+            foreach (var part in name.Split('_'))
+            {
+                result.Append(part.Substring(0, 1).ToUpper());
+                result.Append(part.Substring(1));
+            }
+
+            return result.ToString();
+        }
     }
 }

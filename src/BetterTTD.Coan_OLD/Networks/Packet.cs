@@ -1,27 +1,27 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using BetterTTD.Coan.Enums;
+using BetterTTD.Domain.Enums;
 
-namespace BetterTTD.Coan.Network
+namespace BetterTTD.Coan_OLD.Networks
 {
     public class Packet
     {
-        private const int SEND_MTU = 1460;
-        private const int POS_PACKET_TYPE = 2;
+        private const int SendMtu = 1460;
+        private const int PosPacketType = 2;
 
         private int _pos;
-        private PacketType? _type;
+        private PacketType _type;
         private readonly byte[] _buf;
         private readonly Socket _socket;
 
         public Packet(Socket socket, PacketType type)
         {
             _socket = socket;
-            _buf = new byte[SEND_MTU];
-            _pos = POS_PACKET_TYPE + 1;
-            
+            _buf = new byte[SendMtu];
             SetPacketType(type);
+            _pos = PosPacketType + 1;
         }
 
         public Packet(Socket socket)
@@ -34,13 +34,13 @@ namespace BetterTTD.Coan.Network
 
             switch (socket.Receive(_buf))
             {
-                case { } n when n > SEND_MTU:
+                case { } n when n > SendMtu:
                     throw new IndexOutOfRangeException("Packet length claims to be greater than SEND_MTU");
                 case { } n when n == 0:
                     throw new SocketException((int) SocketError.NoData);
             }
             
-            _pos = POS_PACKET_TYPE + 1;
+            _pos = PosPacketType + 1;
         }
 
         public Socket GetSocket()
@@ -55,16 +55,37 @@ namespace BetterTTD.Coan.Network
         
         private void SetPacketType(PacketType type)
         {
-            _buf[POS_PACKET_TYPE] = (byte) type;
+            _buf[PosPacketType] = (byte) type;
             _type = type;
         }
 
-        public PacketType GetType()
+        public PacketType GetPacketType()
         {
-            _type ??= (PacketType) (_buf[POS_PACKET_TYPE] & 0xFF);
-            return (PacketType) _type;
+            if (_type == 0)
+            {
+                if (PosPacketType == _buf.Length)
+                {
+                    _type = (PacketType) (_buf.Last() & 0xFF);
+                }
+                else
+                {
+                    _type = (PacketType) (_buf[PosPacketType] & 0xFF);
+                }
+            }
+
+            return _type;
         }
-        
+
+        public bool IsSocketCloseIndicator() =>
+            GetPacketType() switch
+            {
+                PacketType.ADMIN_PACKET_SERVER_FULL or
+                PacketType.ADMIN_PACKET_SERVER_BANNED or
+                PacketType.ADMIN_PACKET_SERVER_ERROR or
+                PacketType.ADMIN_PACKET_SERVER_SHUTDOWN => true,
+                _ => false
+            };
+
         public void Send()
         {
             _buf[0] = (byte) _pos;
