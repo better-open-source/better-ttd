@@ -24,7 +24,7 @@ namespace BetterTTD.Coan_OLD.Networks
 
         public void Add(string message, Colors color)
         {
-            _buffer.Add(new Entry(message, color));
+            _buffer.Add(new(message, color));
         }
 
         public void SetEOR()

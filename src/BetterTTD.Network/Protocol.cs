@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using BetterTTD.Domain.Enums;
 
-namespace BetterTTD.Coan_OLD.Networks
+namespace BetterTTD.Network
 {
     public class Protocol
     {
-        public int Version { get; set; } = -1;
         private readonly Dictionary<AdminUpdateType, ArrayList> _supportedFrequencies;
+
+        public int Version { get; set; } = -1;
 
         public Protocol()
         {
@@ -17,14 +18,14 @@ namespace BetterTTD.Coan_OLD.Networks
 
         public void AddSupport(int typeIndex, int freqIndex)
         {
-            var freq = (AdminUpdateFrequency)freqIndex;
-            var type = (AdminUpdateType)typeIndex;
+            var freq = (AdminUpdateFrequency) freqIndex;
+            var type = (AdminUpdateType) typeIndex;
 
             if (_supportedFrequencies.Keys.Contains(type) == false)
             {
                 _supportedFrequencies.Add(type, new());
             }
-            
+
             _supportedFrequencies[type].Add(freq);
         }
 

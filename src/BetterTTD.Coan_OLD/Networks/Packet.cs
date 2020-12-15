@@ -30,7 +30,7 @@ namespace BetterTTD.Coan_OLD.Networks
             _buf = new byte[2];
             
             if (socket.Connected == false)
-                throw new Exception("Socket closed");
+                throw new("Socket closed");
 
             switch (socket.Receive(_buf))
             {

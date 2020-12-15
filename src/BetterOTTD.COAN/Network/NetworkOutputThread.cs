@@ -1,65 +1,53 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
+using BetterTTD.Network;
 
 namespace BetterOTTD.COAN.Network
 {
-    class NetworkOutputThread
+    internal static class NetworkOutputThread
     {
-        protected static ConcurrentDictionary<Socket, BlockingCollection<Packet>> queues;
+        private static readonly ConcurrentDictionary<Socket, BlockingCollection<Packet>> Queues;
 
         static NetworkOutputThread()
         {
-            queues = new ConcurrentDictionary<Socket, BlockingCollection<Packet>>();
-            System.Threading.Thread t = new System.Threading.Thread(run);
-            t.IsBackground = true;
+            Queues = new();
+            var t = new System.Threading.Thread(Run) {IsBackground = true};
             t.Start();
         }
 
-
-        protected static BlockingCollection<Packet> getQueue(Socket socket)
+        private static BlockingCollection<Packet> GetQueue(Socket socket)
         {
-            if (queues.ContainsKey(socket) == false)
+            if (Queues.ContainsKey(socket) == false)
             {
-                queues.TryAdd(socket, new BlockingCollection<Packet>(100));
+                Queues.TryAdd(socket, new(100));
             }
 
-            return queues[socket];
+            return Queues[socket];
         }
 
-        public static Packet getNext(Socket socket)
+        public static void Append(Packet p)
         {
-            return getQueue(socket).Take();
+            GetQueue(p.Socket).Add(p);
         }
 
-        /**
-        * Append a packet to the appropriate queue.
-        * @param p Packet to append to the queue.
-        */
-        public static void append(Packet p)
-        {
-            getQueue(p.getSocket()).Add(p);
-        }
-
-        public static void run()
+        private static void Run()
         {
             while (true)
             {
-                foreach (BlockingCollection<Packet> q in queues.Values)
+                foreach (var q in Queues.Values)
                 {
                     try
                     {
-                        Packet p = q.Take();
+                        var p = q.Take();
 
-                        /* if the socket is closed, remove it from the queue and leave the foreach */
-                        if (p.getSocket().Connected == false)
+                        if (p.Socket.Connected == false)
                         {
-                            queues.TryRemove(p.getSocket(), out _);
+                            Queues.TryRemove(p.Socket, out _);
                             break;
                         }
 
                         p.Send();
-                        //log.trace("Sending Packet {}", p.getType());
                     }
                     catch (Exception ex)
                     {
@@ -67,8 +55,6 @@ namespace BetterOTTD.COAN.Network
                     }
                 }
             }
-
-
         }
     }
 }

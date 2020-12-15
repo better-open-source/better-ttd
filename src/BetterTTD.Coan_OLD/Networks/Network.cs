@@ -17,7 +17,7 @@ namespace BetterTTD.Coan_OLD.Networks
         public Network(OpenTTD ottd)
         {
             OpenTTD = ottd;
-            _networkClient = new NetworkClient(this);
+            _networkClient = new(this);
         }
 
         public bool Connect(string host, int port)
@@ -29,7 +29,7 @@ namespace BetterTTD.Coan_OLD.Networks
 
             try
             {
-                Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 Socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
                 Socket.Connect(host, port);
 

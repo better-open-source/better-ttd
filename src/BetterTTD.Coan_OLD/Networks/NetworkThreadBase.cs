@@ -22,7 +22,7 @@ namespace BetterTTD.Coan_OLD.Networks
         {
             if (!Queues.ContainsKey(socket))
             {
-                Queues.TryAdd(socket, new BlockingCollection<Packet>(15));
+                Queues.TryAdd(socket, new(15));
             }
         }
 

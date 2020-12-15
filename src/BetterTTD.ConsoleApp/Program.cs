@@ -16,7 +16,7 @@ namespace BetterTTD.ConsoleApp
             Console.WriteLine("Welcome to BetterTTD");
             Console.WriteLine("New OpenTTD Admin tool!");
 
-            _client = new NetworkClient();
+            _client = new();
             _client.Connect("127.0.0.1", 3977, "p7gvv");
             _client.OnChat += networkClient_OnChat;
             _client.OnServerWelcome += onServerWelcome;

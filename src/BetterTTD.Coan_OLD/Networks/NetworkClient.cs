@@ -15,7 +15,7 @@ namespace BetterTTD.Coan_OLD.Networks
         public NetworkClient(Network network)
         {
             _network = network;
-            _rconBuffer = new RconBuffer();
+            _rconBuffer = new();
         }
 
         public void Run()
@@ -238,7 +238,7 @@ namespace BetterTTD.Coan_OLD.Networks
             map.Name = p.ReadString();
             map.Seed = p.ReadUint32();
             map.Landscape = (Landscape) p.ReadUint8();
-            map.StartDate = new GameDate(p.ReadUint32());
+            map.StartDate = new(p.ReadUint32());
             map.Width = p.ReadUint16();
             map.Height = p.ReadUint16();
 
@@ -277,7 +277,7 @@ namespace BetterTTD.Coan_OLD.Networks
                 NetworkAddress = p.ReadString(),
                 Name = p.ReadString(),
                 Language = (NetworkLanguage) p.ReadUint8(),
-                JoinDate = new GameDate(p.ReadUint32()),
+                JoinDate = new(p.ReadUint32()),
                 CompanyId = p.ReadUint8()
             };
 
@@ -515,7 +515,7 @@ namespace BetterTTD.Coan_OLD.Networks
         {
             if (_rconBuffer.IsEOR())
             {
-                _rconBuffer = new RconBuffer();
+                _rconBuffer = new();
             }
 
             var colour = (Colors) p.ReadUint16();
@@ -529,7 +529,7 @@ namespace BetterTTD.Coan_OLD.Networks
             _rconBuffer.SetEOR();
 
             ottd.OnRcon(_rconBuffer);
-            _rconBuffer = new RconBuffer();
+            _rconBuffer = new();
         }
 
         public void ReceiveServerProtocol(OpenTTD ottd, Packet p)

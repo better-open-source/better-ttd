@@ -4,6 +4,7 @@ using System.Threading;
 using BetterOTTD.COAN.Common;
 using BetterTTD.Domain.Entities;
 using BetterTTD.Domain.Enums;
+using BetterTTD.Network;
 
 namespace BetterOTTD.COAN.Network
 {
@@ -40,8 +41,8 @@ namespace BetterOTTD.COAN.Network
 
         public NetworkClient()
         {
-            _protocol = new Protocol();
-            _mThread = new Thread(() =>
+            _protocol = new();
+            _mThread = new(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
 
@@ -75,7 +76,7 @@ namespace BetterOTTD.COAN.Network
             }
             try
             {
-                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 _socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
                 _socket.Connect(host, port);
 
@@ -108,7 +109,7 @@ namespace BetterOTTD.COAN.Network
         {
             try
             {
-                Packet p = NetworkInputThread.getNext(_socket);
+                var p = NetworkInputThread.GetNext(_socket);
                 delegatePacket(p);
             }
             catch (Exception)
@@ -118,12 +119,12 @@ namespace BetterOTTD.COAN.Network
 
         private void delegatePacket(Packet p)
         {
-            Type t = GetType();
-            String dispatchName = p.getType().getDispatchName();
+            var t = GetType();
+            var dispatchName = p.GetPacketType().getDispatchName();
 
-            System.Reflection.MethodInfo method = t.GetMethod(dispatchName);
+            var method = t.GetMethod(dispatchName);
 
-            System.Reflection.MethodInfo[] mis = t.GetMethods();
+            var mis = t.GetMethods();
 
             try
             {
@@ -183,61 +184,61 @@ namespace BetterOTTD.COAN.Network
 
         public void sendAdminJoin()
         {
-            Packet p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_JOIN);
+            var p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_JOIN);
 
             p.WriteString(adminPassword);
             p.WriteString(botName);
             p.WriteString(botVersion);
 
-            NetworkOutputThread.append(p);
+            NetworkOutputThread.Append(p);
         }
 
         public void sendAdminChat(NetworkAction action, DestType type, long dest, String msg, long data)
         {
-            Packet p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_CHAT);
-            p.writeUint8((short)action);
-            p.writeUint8((short)type);
-            p.writeUint32(dest);
+            var p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_CHAT);
+            p.WriteUint8((short)action);
+            p.WriteUint8((short)type);
+            p.WriteUint32(dest);
 
             msg = (msg.Length > 900) ? msg.Substring(0, 900) : msg;
 
             p.WriteString(msg);
 
-            p.writeUint64(data);
-            NetworkOutputThread.append(p);
+            p.WriteUint64(data);
+            NetworkOutputThread.Append(p);
         }
 
         public void sendAdminGameScript(string command)
         {
-            Packet p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_GAMESCRIPT);
+            var p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_GAMESCRIPT);
 
 
             p.WriteString(command); // JSON encode
-            NetworkOutputThread.append(p);
+            NetworkOutputThread.Append(p);
         }
 
         public void sendAdminUpdateFrequency(AdminUpdateType type, AdminUpdateFrequency freq)
         {
-            if (_protocol.isSupported(type, freq) == false)
+            if (_protocol.IsSupported(type, freq) == false)
                 throw new ArgumentException("The server does not support " + freq + " for " + type);
 
-            Packet p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_UPDATE_FREQUENCY);
-            p.writeUint16((int)type);
-            p.writeUint16((int)freq);
+            var p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_UPDATE_FREQUENCY);
+            p.WriteUint16((int)type);
+            p.WriteUint16((int)freq);
 
-            NetworkOutputThread.append(p);
+            NetworkOutputThread.Append(p);
         }
 
         public void sendAdminPoll(AdminUpdateType type, long data = 0)
         {
-            if (_protocol.isSupported(type, AdminUpdateFrequency.ADMIN_FREQUENCY_POLL) == false)
+            if (_protocol.IsSupported(type, AdminUpdateFrequency.ADMIN_FREQUENCY_POLL) == false)
                 throw new ArgumentException("The server does not support polling for " + type);
 
-            Packet p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_POLL);
-            p.writeUint8((short)type);
-            p.writeUint32(data);
+            var p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_POLL);
+            p.WriteUint8((short)type);
+            p.WriteUint32(data);
 
-            NetworkOutputThread.append(p);
+            NetworkOutputThread.Append(p);
         }
 
         #endregion
@@ -245,13 +246,13 @@ namespace BetterOTTD.COAN.Network
         #region Receive Packets
         public void receiveServerClientInfo(Packet p)
         {
-            var client = new Client(p.readUint32())
+            var client = new Client(p.ReadUint32())
             {
-                NetworkAddress = p.readString(),
-                Name = p.readString(),
-                Language = (NetworkLanguage) p.readUint8(),
-                JoinDate = new GameDate(p.readUint32()),
-                CompanyId = p.readUint8()
+                NetworkAddress = p.ReadString(),
+                Name = p.ReadString(),
+                Language = (NetworkLanguage) p.ReadUint8(),
+                JoinDate = new(p.ReadUint32()),
+                CompanyId = p.ReadUint8()
             };
             Console.WriteLine($@"{nameof(receiveServerClientInfo)}: ID {client.Id}; Name: {client.Name}");
             OnClientInfo?.Invoke(client);
@@ -260,13 +261,13 @@ namespace BetterOTTD.COAN.Network
         public void receiveServerClientError(Packet p)
         {
             //_network.Disconnect();
-            var error = (NetworkErrorCode) p.readUint8();
+            var error = (NetworkErrorCode) p.ReadUint8();
             Console.WriteLine($"ERROR CAPTURED: {error.ToString()}");
         }
         
         public void receiveServerClientJoin(Packet p)
         {
-            var clientId = p.readUint32();
+            var clientId = p.ReadUint32();
 
             pollClientInfos(clientId);
             Console.WriteLine($"Unknown client joined #{clientId}");
@@ -274,20 +275,20 @@ namespace BetterOTTD.COAN.Network
 
         public void receiveServerProtocol(Packet p)
         {
-            _protocol.version = p.readUint8();
+            _protocol.Version = p.ReadUint8();
 
-            while (p.readBool())
+            while (p.ReadBool())
             {
-                int tIndex = p.readUint16();
-                int fValues = p.readUint16();
+                var tIndex = p.ReadUint16();
+                var fValues = p.ReadUint16();
 
                 foreach (AdminUpdateFrequency freq in Enum.GetValues(typeof(AdminUpdateFrequency)))
                 {
-                    int index = fValues & (int)freq;
+                    var index = fValues & (int)freq;
 
                     if (index != 0)
                     {
-                        _protocol.addSupport(tIndex, (int)freq);
+                        _protocol.AddSupport(tIndex, (int)freq);
                     }
                 }
             }
@@ -297,20 +298,20 @@ namespace BetterOTTD.COAN.Network
 
         public void receiveServerWelcome(Packet p)
         {
-            Map map = new Map();
+            var map = new Map();
             
-            Game game = new Game();
+            var game = new Game();
             
-            game.Name = p.readString();
-            game.GameVersion = p.readString();
-            game.Dedicated = p.readBool();
+            game.Name = p.ReadString();
+            game.GameVersion = p.ReadString();
+            game.Dedicated = p.ReadBool();
 
-            map.Name = p.readString();
-            map.Seed = p.readUint32();
-            map.Landscape = (Landscape) p.readUint8();
-            map.StartDate = new GameDate(p.readUint32());
-            map.Width = p.readUint16();
-            map.Height = p.readUint16();
+            map.Name = p.ReadString();
+            map.Seed = p.ReadUint32();
+            map.Landscape = (Landscape) p.ReadUint8();
+            map.StartDate = new(p.ReadUint32());
+            map.Width = p.ReadUint16();
+            map.Height = p.ReadUint16();
 
             game.Map = map;
 
@@ -319,18 +320,18 @@ namespace BetterOTTD.COAN.Network
 
         public void receiveServerConsole(Packet p)
         {
-            var origin = p.readString();
-            var message = p.readString();
+            var origin = p.ReadString();
+            var message = p.ReadString();
             
             OnChat?.Invoke(origin, message);
         }
 
         public void receiveServerCmdNames(Packet p)
         {
-            while (p.readBool())
+            while (p.ReadBool())
             {
-                int cmdId = p.readUint16();
-                String cmdName = p.readString();
+                var cmdId = p.ReadUint16();
+                var cmdName = p.ReadString();
                 if(DoCommandName.Enumeration.ContainsKey(cmdName) == false)
                     DoCommandName.Enumeration.Add(cmdName, cmdId);
             }

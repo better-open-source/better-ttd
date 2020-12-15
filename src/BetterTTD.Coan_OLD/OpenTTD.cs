@@ -21,7 +21,7 @@ namespace BetterTTD.Coan_OLD
 
         public OpenTTD()
         {
-            Network = new Network(this);
+            Network = new(this);
         }
 
         public bool Connect(string host, int port, string password)

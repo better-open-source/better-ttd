@@ -6,7 +6,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\BetterTTD.Domain\BetterTTD.Domain.csproj" />
-      <ProjectReference Include="..\BetterTTD.Network\BetterTTD.Network.csproj" />
     </ItemGroup>
 
 </Project>

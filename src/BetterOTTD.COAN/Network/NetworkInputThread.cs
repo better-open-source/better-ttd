@@ -1,64 +1,58 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
+using BetterTTD.Network;
 
 namespace BetterOTTD.COAN.Network
 {
-    class NetworkInputThread
+    internal static class NetworkInputThread
     {
-        protected static ConcurrentDictionary<Socket, BlockingCollection<Packet>> queues;
+        private static readonly ConcurrentDictionary<Socket, BlockingCollection<Packet>> Queues;
 
         static NetworkInputThread()
         {
-            queues = new ConcurrentDictionary<Socket, BlockingCollection<Packet>>();
-            System.Threading.Thread t = new System.Threading.Thread(run);
-            t.IsBackground = true;
+            Queues = new();
+            var t = new System.Threading.Thread(Run) {IsBackground = true};
             t.Start();
         }
 
-        protected static BlockingCollection<Packet> getQueue(Socket socket)
+        private static BlockingCollection<Packet> GetQueue(Socket socket)
         {
-            if (queues.ContainsKey(socket) == false)
+            if (Queues.ContainsKey(socket) == false)
             {
-                queues.TryAdd(socket, new BlockingCollection<Packet>(100));
+                Queues.TryAdd(socket, new(100));
             }
 
-            return queues[socket];
+            return Queues[socket];
         }
 
-        public static Packet getNext(Socket socket)
+        public static Packet GetNext(Socket socket)
         {
-            return getQueue(socket).Take();
+            return GetQueue(socket).Take();
         }
 
-        /**
-        * Append a packet to the appropriate queue.
-        * @param p Packet to append to the queue.
-        */
-        public static void append(Packet p)
+        private static void Append(Packet p)
         {
-            getQueue(p.getSocket()).Add(p);
+            GetQueue(p.Socket).Add(p);
         }
 
-        public static void run()
+        private static void Run()
         {
             while (true)
             {
-                foreach (Socket socket in queues.Keys)
+                foreach (var socket in Queues.Keys)
                 {
                     try
                     {
                         if (socket.Connected == false)
                         {
-                            queues.TryRemove(socket, out _);
-                            //log.info("Socket closed: {}", socket.getRemoteSocketAddress().toString());
+                            Queues.TryRemove(socket, out _);
                             continue;
                         }
 
-                        Packet p = new Packet(socket);
-                        append(p);
-                        Console.WriteLine("Received Packet: {0}", p.getType());
-                        //log.trace("Received Packet {}", p.getType());
+                        var p = new Packet(socket);
+                        Append(p);
+                        Console.WriteLine("Received Packet: {0}", p.GetPacketType());
                     }
                     catch (Exception)
                     {

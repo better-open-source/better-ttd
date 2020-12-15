@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\BetterTTD.Domain\BetterTTD.Domain.csproj" />
-      <ProjectReference Include="..\BetterTTD.Network\BetterTTD.Network.csproj" />
+      <ProjectReference Include="..\BetterTTD.Actors\BetterTTD.Actors.csproj" />
     </ItemGroup>
 
 </Project>

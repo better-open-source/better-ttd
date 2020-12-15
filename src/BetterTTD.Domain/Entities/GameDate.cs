@@ -74,7 +74,7 @@ namespace BetterTTD.Domain.Entities
         public GameDate PreviousQuarter()
         {
             var dateTime = new DateTime(Year, Month - 3, DateTime.DaysInMonth(Year, Month -3));
-            return new GameDate(dateTime);
+            return new(dateTime);
         }
         
         public override string ToString()
