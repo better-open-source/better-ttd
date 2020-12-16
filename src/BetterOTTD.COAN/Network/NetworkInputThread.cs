@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Net.Sockets;
 using BetterTTD.Network;
+using CSharpFunctionalExtensions;
 
 namespace BetterOTTD.COAN.Network
 {
@@ -42,25 +43,24 @@ namespace BetterOTTD.COAN.Network
             {
                 foreach (var socket in Queues.Keys)
                 {
-                    try
+                    if (socket.Connected == false)
                     {
-                        if (socket.Connected == false)
-                        {
-                            Queues.TryRemove(socket, out _);
-                            continue;
-                        }
-
-                        var p = new Packet(socket);
-                        Append(p);
-                        Console.WriteLine("Received Packet: {0}", p.GetPacketType());
+                        Queues.TryRemove(socket, out _);
+                        continue;
                     }
-                    catch (Exception)
+
+                    var (isSuccess, _, packet, error) = Packet.Create(socket);
+                    if (isSuccess)
                     {
-                        //log.error("Failed reading packet", ex);
+                        Append(packet);
+                        Console.WriteLine($"Received Packet: {packet.GetPacketType()}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Received Packet Error : {error}");
                     }
                 }
             }
         }
-
     }
 }

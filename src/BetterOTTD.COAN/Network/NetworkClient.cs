@@ -46,7 +46,7 @@ namespace BetterOTTD.COAN.Network
             {
                 Thread.CurrentThread.IsBackground = true;
 
-                while (IsConnected())
+                while (_socket.Connected)
                     receive();
 
                 Thread.CurrentThread.Abort();
@@ -95,11 +95,6 @@ namespace BetterOTTD.COAN.Network
             sendAdminChat(NetworkAction.NETWORK_ACTION_CHAT, DestType.DESTTYPE_BROADCAST, 0, msg, 0);
         }
 
-        public Boolean IsConnected()
-        {
-            return _socket.Connected;
-        }
-
         public void Start()
         {
             _mThread.Start();
@@ -141,6 +136,7 @@ namespace BetterOTTD.COAN.Network
         }
 
         #region Polls
+        
         public void pollCmdNames()
         {
             sendAdminPoll(AdminUpdateType.ADMIN_UPDATE_CMD_NAMES);
@@ -161,7 +157,7 @@ namespace BetterOTTD.COAN.Network
         /// <param name="companyId">Optional parameter specifying the Company ID to get info on</param>
         public void pollCompanyInfos(long companyId = long.MaxValue)
         {
-            sendAdminPoll(AdminUpdateType.ADMIN_UPDATE_CLIENT_INFO, companyId);
+            sendAdminPoll(AdminUpdateType.ADMIN_UPDATE_COMPANY_INFO, companyId);
         }
 
         public void pollCompanyStats()
@@ -178,6 +174,7 @@ namespace BetterOTTD.COAN.Network
         {
             sendAdminPoll(AdminUpdateType.ADMIN_UPDATE_DATE);
         }
+        
         #endregion
 
         #region Send Packets
@@ -193,7 +190,7 @@ namespace BetterOTTD.COAN.Network
             NetworkOutputThread.Append(p);
         }
 
-        public void sendAdminChat(NetworkAction action, DestType type, long dest, String msg, long data)
+        public void sendAdminChat(NetworkAction action, DestType type, long dest, string msg, long data)
         {
             var p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_CHAT);
             p.WriteUint8((short)action);
@@ -211,7 +208,6 @@ namespace BetterOTTD.COAN.Network
         public void sendAdminGameScript(string command)
         {
             var p = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_GAMESCRIPT);
-
 
             p.WriteString(command); // JSON encode
             NetworkOutputThread.Append(p);
@@ -244,6 +240,7 @@ namespace BetterOTTD.COAN.Network
         #endregion
 
         #region Receive Packets
+        
         public void receiveServerClientInfo(Packet p)
         {
             var client = new Client(p.ReadUint32())

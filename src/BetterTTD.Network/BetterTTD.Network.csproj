@@ -8,4 +8,17 @@
       <ProjectReference Include="..\BetterTTD.Domain\BetterTTD.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Packet.Write.cs">
+        <DependentUpon>Packet.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Packet.Read.cs">
+        <DependentUpon>Packet.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CSharpFunctionalExtensions" Version="2.13.2" />
+    </ItemGroup>
+
 </Project>
