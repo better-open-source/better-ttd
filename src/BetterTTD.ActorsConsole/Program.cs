@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Akka.Actor;
 using BetterTTD.Actors;
 
@@ -8,6 +9,7 @@ namespace BetterTTD.ActorsConsole
     {
         private static void Main()
         {
+            Console.OutputEncoding = Encoding.UTF8;
             var system = new ClientSystem("ottd-system");
             var view = new ConsoleView(system);
             view.Connect("127.0.0.1", 3977, "p7gvv");
