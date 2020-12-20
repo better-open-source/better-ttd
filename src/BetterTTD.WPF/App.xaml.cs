@@ -1,22 +1,17 @@
-﻿using System;
-using System.Text;
+﻿using System.Threading.Tasks;
+using System.Windows;
 using Akka.Actor;
 using BetterTTD.Actors.ClientBridgeGroup;
 using BetterTTD.Actors.ClientGroup;
+using GalaSoft.MvvmLight.Threading;
 
-namespace BetterTTD.ActorsConsole
+namespace BetterTTD.WPF
 {
-    internal static class Program
+    public partial class App : Application
     {
-        private static void Main()
+        public App()
         {
-            Console.OutputEncoding = Encoding.UTF8;
-            var system = new ClientSystem("ottd-system");
-
-            var view = new ConsoleView(system);
-            view.Connect("127.0.0.1", 3977, "p7gvv");
-            
-            Console.Read();
+            DispatcherHelper.Initialize();
         }
     }
 
@@ -41,6 +36,11 @@ namespace BetterTTD.ActorsConsole
         {
             var connectorActor = _actorSystem.ActorOf(ConnectBridgeActor.Props(_clientActor, view), nameof(ConnectBridgeActor));
             return new ClientConnector(connectorActor);
+        }
+
+        public async Task TerminateAsync()
+        {
+            await _actorSystem.Terminate();
         }
     }
 }

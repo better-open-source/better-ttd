@@ -22,10 +22,10 @@ namespace BetterTTD.Domain.Entities
         public int[] Shares { get; set; } = {INVALID_COMPANY, INVALID_COMPANY, INVALID_COMPANY, INVALID_COMPANY};
         public int Bankruptcy { get; set; }
 
-        public Economy CurrentEconomy { get; set; } = new();
-        public LinkedList<Economy> EconomyHistory { get; set; } = new();
-        public readonly Dictionary<VehicleType, int> Vehicles = new();
-        public readonly Dictionary<VehicleType, int> Stations = new();
+        public Economy CurrentEconomy { get; set; } = new Economy();
+        public LinkedList<Economy> EconomyHistory { get; set; } = new LinkedList<Economy>();
+        public readonly Dictionary<VehicleType, int> Vehicles = new Dictionary<VehicleType, int>();
+        public readonly Dictionary<VehicleType, int> Stations = new Dictionary<VehicleType, int>();
         
         public Company(int id) : base(id)
         {

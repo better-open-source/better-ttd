@@ -5,6 +5,6 @@ namespace BetterTTD.Domain.Entities
 {
     public class DoCommandName
     {
-        public static readonly Dictionary<string, int> Enumeration = new();
+        public static readonly Dictionary<string, int> Enumeration = new Dictionary<string, int>();
     }
 }

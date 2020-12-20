@@ -7,17 +7,19 @@ using BetterTTD.Domain.Entities;
 using BetterTTD.Domain.Enums;
 using BetterTTD.Network;
 
-namespace BetterTTD.Actors
+namespace BetterTTD.Actors.ClientGroup.ReceiverGroup.DispatcherGroup
 {
     public class DispatcherActor : ReceiveActor
     {
         private readonly ILoggingAdapter _log;
-        private readonly ActorSelection _bridge;
+        private readonly ActorSelection _clientBridge;
+        private readonly ActorSelection _connectorBridge;
 
         public DispatcherActor()
         {
             _log = Context.GetLogger();
-            _bridge = Context.ActorSelection("akka://ottd-system/user/BridgeActor");
+            _clientBridge = Context.ActorSelection("akka://ottd-system/user/ClientBridgeActor");
+            _connectorBridge = Context.ActorSelection("akka://ottd-system/user/ConnectBridgeActor");
 
             Receive<ReceivedBufMessage>(ReceivedBufMessageHandler);
             
@@ -103,7 +105,7 @@ namespace BetterTTD.Actors
                 }
             }
 
-            _bridge.Tell(new OnProtocolMessage(protocol));
+            _clientBridge.Tell(new OnProtocolMessage(protocol));
         }
         
         private void ReceiveServerWelcome(Packet packet)
@@ -119,13 +121,14 @@ namespace BetterTTD.Actors
             map.Name = packet.ReadString();
             map.Seed = packet.ReadUint32();
             map.Landscape = (Landscape) packet.ReadUint8();
-            map.StartDate = new(packet.ReadUint32());
+            map.StartDate = new GameDate(packet.ReadUint32());
             map.Width = packet.ReadUint16();
             map.Height = packet.ReadUint16();
 
             game.Map = map;
 
-            _bridge.Tell(new OnServerWelcomeMessage(game));
+            _clientBridge.Tell(new OnServerWelcomeMessage(game));
+            _connectorBridge.Tell(new OnAdminConnectMessage());
         }
 
         private void ReceiveServerCmdNames(Packet packet)
@@ -139,7 +142,7 @@ namespace BetterTTD.Actors
                 commands.Add(cmdId, cmdName);
             }
 
-            _bridge.Tell(new OnServerCmdNamesMessage(commands));
+            _clientBridge.Tell(new OnServerCmdNamesMessage(commands));
         }
 
         private void ReceiveServerConsole(Packet packet)
@@ -147,7 +150,7 @@ namespace BetterTTD.Actors
             var origin = packet.ReadString();
             var message = packet.ReadString();
 
-            _bridge.Tell(new OnServerConsoleMessage(origin, message));
+            _clientBridge.Tell(new OnServerConsoleMessage(origin, message));
         }
 
         private void ReceiveServerClientInfo(Packet packet)
@@ -157,11 +160,11 @@ namespace BetterTTD.Actors
                 NetworkAddress = packet.ReadString(),
                 Name = packet.ReadString(),
                 Language = (NetworkLanguage) packet.ReadUint8(),
-                JoinDate = new(packet.ReadUint32()),
+                JoinDate = new GameDate(packet.ReadUint32()),
                 CompanyId = packet.ReadUint8()
             };
             
-            _bridge.Tell(new OnServerClientInfoMessage(client));
+            _clientBridge.Tell(new OnServerClientInfoMessage(client));
         }
 
         private void ReceiveServerChat(Packet packet)
@@ -172,7 +175,7 @@ namespace BetterTTD.Actors
             var message = packet.ReadString();
             var data = packet.ReadUint64();
             
-            _bridge.Tell(new OnServerChatMessage(action, dest, clientId, message, data));
+            _clientBridge.Tell(new OnServerChatMessage(action, dest, clientId, message, data));
         }
 
         private void ReceiveServerClientUpdate(Packet packet)
@@ -181,14 +184,14 @@ namespace BetterTTD.Actors
             var name = packet.ReadString();
             var companyId = packet.ReadUint8();
             
-            _bridge.Tell(new OnServerClientUpdateMessage(clientId, name, companyId));
+            _clientBridge.Tell(new OnServerClientUpdateMessage(clientId, name, companyId));
         }
         
         private void ReceiveServerClientQuit(Packet packet)
         {
             var clientId = packet.ReadUint32();
             
-            _bridge.Tell(new OnServerClientQuitMessage(clientId));
+            _clientBridge.Tell(new OnServerClientQuitMessage(clientId));
         }
         
         private void ReceiveServerClientError(Packet packet)
@@ -196,22 +199,24 @@ namespace BetterTTD.Actors
             var clientId = packet.ReadUint32();
             var error = (NetworkErrorCode) packet.ReadUint8();
             
-            _bridge.Tell(new OnServerClientErrorMessage(clientId, error));
+            _clientBridge.Tell(new OnServerClientErrorMessage(clientId, error));
         }
         
         private void ReceiveServerCompanyStats(Packet packet)
         {
             var companyId = packet.ReadUint8();
             
-            var vehicles = 
-                Enum.GetValues<VehicleType>()
-                .ToDictionary(vehicleType => vehicleType, vehicleType => packet.ReadUint16());
+            var vehicles = Enum
+                .GetValues(typeof(VehicleType))
+                .Cast<VehicleType>()
+                .ToDictionary(vehicleType => vehicleType, _ => packet.ReadUint16());
             
-            var stations = 
-                Enum.GetValues<VehicleType>()
-                .ToDictionary(vehicleType => vehicleType, vehicleType => packet.ReadUint16());
+            var stations = Enum
+                .GetValues(typeof(VehicleType))
+                .Cast<VehicleType>()
+                .ToDictionary(vehicleType => vehicleType, _ => packet.ReadUint16());
             
-            _bridge.Tell(new OnServerCompanyStatsMessage(companyId, vehicles, stations));
+            _clientBridge.Tell(new OnServerCompanyStatsMessage(companyId, vehicles, stations));
         }
         
         private void ReceiveServerCompanyRemove(Packet packet)
@@ -219,12 +224,12 @@ namespace BetterTTD.Actors
             var companyId = packet.ReadUint8();
             var removeReason = (AdminCompanyRemoveReason) packet.ReadUint8();
 
-            _bridge.Tell(new OnServerCompanyRemoveMessage(companyId, removeReason));
+            _clientBridge.Tell(new OnServerCompanyRemoveMessage(companyId, removeReason));
         }
         
         private void ReceiveServerCmdLogging(Packet packet)
         {
-            throw new NotImplementedException();
+            //TODO: throw new NotImplementedException();
         }
     }
 }

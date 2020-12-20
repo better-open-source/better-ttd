@@ -9,8 +9,8 @@ namespace BetterTTD.Domain.Entities
         public string GameVersion { get; set; }
         public int VersionProtocol { get; set; }
         public bool Dedicated { get; set; }
-        public Map Map { get; set; } = new();
-        public Dictionary<PauseMode, bool> PauseState { get; } = new();
+        public Map Map { get; set; } = new Map();
+        public Dictionary<PauseMode, bool> PauseState { get; } = new Dictionary<PauseMode, bool>();
 
         public bool IsPaused ()
         {

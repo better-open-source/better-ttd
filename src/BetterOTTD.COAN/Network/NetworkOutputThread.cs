@@ -11,7 +11,7 @@ namespace BetterOTTD.COAN.Network
 
         static NetworkOutputThread()
         {
-            Queues = new();
+            Queues = new ConcurrentDictionary<Socket, BlockingCollection<Packet>>();
             var t = new System.Threading.Thread(Run) {IsBackground = true};
             t.Start();
         }
@@ -20,7 +20,7 @@ namespace BetterOTTD.COAN.Network
         {
             if (Queues.ContainsKey(socket) == false)
             {
-                Queues.TryAdd(socket, new(100));
+                Queues.TryAdd(socket, new BlockingCollection<Packet>(100));
             }
 
             return Queues[socket];

@@ -8,7 +8,7 @@ namespace BetterOTTD.COAN.Common
         public static string getDispatchName(this PacketType packet)
         {
             var name = packet.ToString().Replace("ADMIN_PACKET_", "").ToLower();
-            var result = (int)packet < 100 ? new("send") : new StringBuilder("receive");
+            var result = (int)packet < 100 ? new StringBuilder("send") : new StringBuilder("receive");
 
             foreach (var part in name.Split('_'))
             {

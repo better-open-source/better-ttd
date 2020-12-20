@@ -41,8 +41,8 @@ namespace BetterOTTD.COAN.Network
 
         public NetworkClient()
         {
-            _protocol = new();
-            _mThread = new(() =>
+            _protocol = new Protocol();
+            _mThread = new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
 
@@ -76,7 +76,7 @@ namespace BetterOTTD.COAN.Network
             }
             try
             {
-                _socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 _socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
                 _socket.Connect(host, port);
 
@@ -248,7 +248,7 @@ namespace BetterOTTD.COAN.Network
                 NetworkAddress = p.ReadString(),
                 Name = p.ReadString(),
                 Language = (NetworkLanguage) p.ReadUint8(),
-                JoinDate = new(p.ReadUint32()),
+                JoinDate = new GameDate(p.ReadUint32()),
                 CompanyId = p.ReadUint8()
             };
             Console.WriteLine($@"{nameof(receiveServerClientInfo)}: ID {client.Id}; Name: {client.Name}");
@@ -306,7 +306,7 @@ namespace BetterOTTD.COAN.Network
             map.Name = p.ReadString();
             map.Seed = p.ReadUint32();
             map.Landscape = (Landscape) p.ReadUint8();
-            map.StartDate = new(p.ReadUint32());
+            map.StartDate = new GameDate(p.ReadUint32());
             map.Width = p.ReadUint16();
             map.Height = p.ReadUint16();
 

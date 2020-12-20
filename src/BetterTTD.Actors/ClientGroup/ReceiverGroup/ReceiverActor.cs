@@ -2,24 +2,28 @@
 using System.Net.Sockets;
 using Akka.Actor;
 using Akka.Event;
+using BetterTTD.Actors.ClientGroup.ReceiverGroup.DispatcherGroup;
 using BetterTTD.Network;
 using CSharpFunctionalExtensions;
 
-namespace BetterTTD.Actors
+namespace BetterTTD.Actors.ClientGroup.ReceiverGroup
 {
     public class ReceiverActor : ReceiveActor, IWithTimers
     {
         private readonly Socket _socket;
+        private readonly ActorSelection _connectorBridge;
         private readonly ILoggingAdapter _log;
-        private IActorRef _dispatcher;
-        
+        private readonly IActorRef _dispatcher;
+
         public ITimerScheduler Timers { get; set; }
 
         public ReceiverActor(Socket socket)
         {
             _socket = socket;
             _log = Context.GetLogger();
-            
+            _connectorBridge = Context.ActorSelection("akka://ottd-system/user/ConnectBridgeActor");
+            _dispatcher = Context.ActorOf(DispatcherActor.Props(), nameof(DispatcherActor));
+
             Receive<ReceiveBufMessage>(ReceiveBufMessageHandler);
             
             _log.Info("Initialized");
@@ -34,8 +38,6 @@ namespace BetterTTD.Actors
         {
             _log.Info($"PreStart for {nameof(ReceiverActor)}");
 
-            _dispatcher = Context.ActorOf(DispatcherActor.Props(), nameof(DispatcherActor));
-            
             Timers.StartPeriodicTimer(
                 nameof(ReceiverActor), 
                 new ReceiveBufMessage(), 
@@ -53,6 +55,10 @@ namespace BetterTTD.Actors
             else
             {
                 _log.Error($"Received Packet Error: {error}");
+                
+                _connectorBridge.Tell(new ReceiveSocketErrorMessage(error));
+                
+                Timers.CancelAll();
             }
         }
     }

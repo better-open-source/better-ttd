@@ -12,7 +12,7 @@
 
         public bool IsSameQuarter(Economy economy) =>
             Date != economy.Date 
-            && economy.Date is not null 
+            && economy.Date != null
             && Date.Year == economy.Date.Year 
             && Date.GetQuarter() == economy.Date.GetQuarter();
     }

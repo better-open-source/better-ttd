@@ -1,28 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Akka.Util.Internal;
 using BetterTTD.Actors.ClientGroup;
 using BetterTTD.Domain.Entities;
 using BetterTTD.Domain.Enums;
 using BetterTTD.Network;
+using BetterTTD.WPF.Models;
+using CSharpFunctionalExtensions;
+using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Ioc;
+using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Threading;
 using Newtonsoft.Json;
 
-namespace BetterTTD.ActorsConsole
+namespace BetterTTD.WPF.ViewModels
 {
-    public class ConsoleView : IClientView, IConnectorView
+    public class HomeViewModel : BaseViewModel, IClientView
     {
-        private readonly Dictionary<int, string> _commands;
         private readonly IClientCommander _commander;
-        private readonly IClientConnector _connector;
-        
         private Protocol _protocol;
+        private readonly Dictionary<int, string> _commands;
+        public List<ClientModel> Clients { get; set; } = new List<ClientModel>();
 
-        public ConsoleView(ClientSystem system)
+        public ObservableCollection<ChatModel> ChatList
+        {
+            get => Get(new ObservableCollection<ChatModel>());
+            set => Set(value);
+        }
+
+        public RelayCommand DisconnectCommand => new RelayCommand(DisconnectCommandHandler);
+
+        private void DisconnectCommandHandler()
+        {
+            SimpleIoc.Default.Unregister<ClientSystem>();
+            Messenger.Default.Send(new ShowConnectMessage());
+        }
+
+        public HomeViewModel(ClientSystem system)
         {
             _commands = new Dictionary<int, string>();
             _commander = system.CreateClientCommander(this);
-            _connector = system.CreateClientConnector(this);
         }
 
         public void OnProtocol(Protocol protocol)
@@ -56,22 +75,37 @@ namespace BetterTTD.ActorsConsole
 
         public void OnServerClientInfo(Client client)
         {
+            ClientModel
+                .Create(client)
+                .Tap(cl => Clients.Add(cl));
+            
             var json = JsonConvert.SerializeObject(client, Formatting.Indented);
             Console.WriteLine($"{nameof(OnServerClientInfo)}: {json}");
         }
 
         public void OnServerChat(NetworkAction action, DestType dest, long clientId, string message, long data)
         {
+            Maybe<ClientModel> maybeClient = Clients.FirstOrDefault(cl => cl.Id == clientId);
+            var model = new ChatModel(dest, maybeClient, message);
+            
+            DispatcherHelper.CheckBeginInvokeOnUI(() => ChatList.Add(model));
+            
             Console.WriteLine($"{nameof(OnServerChat)} | action:{action}; dest: {dest}; clientId: {clientId}; message: {message}; data: {data}");
         }
 
         public void OnServerClientUpdate(long clientId, int companyId, string name)
         {
+            Maybe<ClientModel> maybeClient = Clients.FirstOrDefault(cl => cl.Id == clientId);
+            maybeClient.Match(cl => { cl.Name = name; }, () => { });
+            
             Console.WriteLine($"{nameof(OnServerClientUpdate)} | clientId: {clientId}; companyId: {companyId}; name: {name}");
         }
 
         public void OnServerClientQuit(long clientId)
         {
+            Maybe<ClientModel> maybeClient = Clients.FirstOrDefault(cl => cl.Id == clientId);
+            maybeClient.Match(cl => Clients.Remove(cl), () => { });
+            
             Console.WriteLine($"{nameof(OnServerClientQuit)} | clientId: {clientId}");
         }
 
@@ -94,16 +128,6 @@ namespace BetterTTD.ActorsConsole
         public void OnServerCompanyRemove(int companyId, AdminCompanyRemoveReason removeReason)
         {
             Console.WriteLine($"{nameof(OnServerClientError)} | companyId: {companyId}; removeReason: {removeReason}");
-        }
-
-        public void Connect(string host, int port, string pass)
-        {
-            _connector.Connect(host, port, pass);
-        }
-        
-        public void ConnectResponse(bool connected, string objError)
-        {
-            Console.WriteLine($"IsConnected:{connected}");
         }
     }
 }

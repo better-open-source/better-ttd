@@ -3,9 +3,11 @@ using System.Linq;
 using System.Net.Sockets;
 using Akka.Actor;
 using Akka.Event;
+using BetterTTD.Actors.ClientGroup.ReceiverGroup;
+using BetterTTD.Actors.ClientGroup.SenderGroup;
 using BetterTTD.Domain.Enums;
 
-namespace BetterTTD.Actors
+namespace BetterTTD.Actors.ClientGroup
 {
     public sealed class ClientActor : ReceiveActor
     {
@@ -31,21 +33,21 @@ namespace BetterTTD.Actors
         
         private void ConnectMessageHandler(AdminConnectMessage msg)
         {
-            var (host, port, password) = msg;
+            _log.Info($"Handled {nameof(AdminConnectMessage)}. Host:{msg.Host}; Port:{msg.Port}; Password:{msg.AdminPassword}");
 
-            _log.Info($"Handled {nameof(AdminConnectMessage)}. Host:{host}; Port:{port}; Password:{password}");
-            
             if (_socket?.Connected ?? false)
+            {
+                Sender.Tell(false);
                 return;
-
-            _socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            }
+            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
-            _socket.Connect(host, port);
-            
+            _socket.Connect(msg.Host, msg.Port);
+
             _ = Context.ActorOf(ReceiverActor.Props(_socket), nameof(ReceiverActor));
             _sender = Context.ActorOf(SenderActor.Props(_socket), nameof(SenderActor));
-            
-            _sender.Tell(new SendAdminJoinMessage(password, "BetterTTD", "1.0"));
+
+            _sender.Tell(new SendAdminJoinMessage(msg.AdminPassword, "BetterTTD", "1.0"));
         }
         
         private void SetDefaultUpdateFrequencyMessageHandler(SetDefaultUpdateFrequencyMessage msg)
@@ -77,12 +79,12 @@ namespace BetterTTD.Actors
         {
             var pollMessages = new List<SendAdminPollMessage>
             {
-                new(AdminUpdateType.ADMIN_UPDATE_CMD_NAMES),
-                new(AdminUpdateType.ADMIN_UPDATE_CLIENT_INFO, long.MaxValue),
-                new(AdminUpdateType.ADMIN_UPDATE_COMPANY_INFO, long.MaxValue),
-                new(AdminUpdateType.ADMIN_UPDATE_COMPANY_STATS),
-                new(AdminUpdateType.ADMIN_UPDATE_COMPANY_ECONOMY),
-                new(AdminUpdateType.ADMIN_UPDATE_DATE)
+                new SendAdminPollMessage(AdminUpdateType.ADMIN_UPDATE_CMD_NAMES),
+                new SendAdminPollMessage(AdminUpdateType.ADMIN_UPDATE_CLIENT_INFO, long.MaxValue),
+                new SendAdminPollMessage(AdminUpdateType.ADMIN_UPDATE_COMPANY_INFO, long.MaxValue),
+                new SendAdminPollMessage(AdminUpdateType.ADMIN_UPDATE_COMPANY_STATS),
+                new SendAdminPollMessage(AdminUpdateType.ADMIN_UPDATE_COMPANY_ECONOMY),
+                new SendAdminPollMessage(AdminUpdateType.ADMIN_UPDATE_DATE)
             };
             
             pollMessages

@@ -4,12 +4,6 @@ using CSharpFunctionalExtensions;
 
 namespace BetterTTD.Network
 {
-    public abstract record AppError;
-
-    public record NullError(string PropName) : AppError;
-    public record UnhandledError(string Message) : AppError;
-    public record SocketNotConnectedError(string Message = "Socket is not connected.") : AppError;
-    
     public partial class Packet
     {
         private const int SendMtu = 1460;
@@ -35,15 +29,15 @@ namespace BetterTTD.Network
             _pos = PosPacketType + 1;
         }
 
-        public static Result<Packet, AppError> Create(Socket socket)
+        public static Result<Packet> Create(Socket socket)
         {
             var buf = new byte[SendMtu];
             return socket switch
             {
-                _ when socket is null => Result.Failure<Packet, AppError>(new NullError(nameof(socket))),
-                _ when !socket.Connected => Result.Failure<Packet, AppError>(new SocketNotConnectedError()),
+                _ when socket is null => Result.Failure<Packet>("NullError"),
+                _ when !socket.Connected => Result.Failure<Packet>("SocketNotConnectedError"),
                 _ when socket.Receive(buf) != 0 => new Packet(buf),
-                _ => Result.Failure<Packet, AppError>(new UnhandledError("Socket unhandled error."))
+                _ => Result.Failure<Packet>("Socket unhandled error.")
             };
         }
 
