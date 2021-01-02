@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using Akka.Event;
+using BetterTTD.Actors.Abstractions;
 using BetterTTD.Actors.ClientGroup;
 using BetterTTD.Actors.ClientGroup.ReceiverGroup;
 
@@ -7,10 +8,10 @@ namespace BetterTTD.Actors.ClientBridgeGroup
 {
     public class ConnectBridgeActor : ReceiveActor
     {
-        private readonly IConnectorView _view;
+        private readonly IConnectView _view;
         private readonly IActorRef _clientActor;
 
-        public ConnectBridgeActor(IActorRef clientActor, IConnectorView view)
+        public ConnectBridgeActor(IActorRef clientActor, IConnectView view)
         {
             _clientActor = clientActor;
             _view = view;
@@ -20,7 +21,7 @@ namespace BetterTTD.Actors.ClientBridgeGroup
             Context.GetLogger().Info("Initialized");
         }
 
-        public static Props Props(IActorRef clientActor, IConnectorView view)
+        public static Props Props(IConnectView view, IActorRef clientActor)
         {
             return Akka.Actor.Props.Create(() => new ConnectBridgeActor(clientActor, view));
         }

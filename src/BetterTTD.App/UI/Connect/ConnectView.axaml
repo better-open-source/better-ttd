@@ -1,0 +1,19 @@
+﻿<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    d:DataContext="{d:DesignInstance connect:ConnectPresenter, IsDesignTimeCreatable=True}"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:connect="clr-namespace:BetterTTD.App.UI.Connect"
+    x:Class="BetterTTD.App.UI.Connect.ConnectView"
+    mc:Ignorable="d">
+    <Grid>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock>Connect to OpenTTD Admin</TextBlock>
+            <TextBox Text="{Binding Host, Mode=TwoWay}" />
+            <TextBox Text="{Binding Port, Mode=TwoWay}" />
+            <TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="*" />
+            <Button Command="{Binding ConnectCommand}">Connect</Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

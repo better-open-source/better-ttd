@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using BetterTTD.Actors.Abstractions;
 using BetterTTD.Actors.ClientGroup;
 using BetterTTD.Actors.ClientGroup.ReceiverGroup.DispatcherGroup;
 
@@ -35,7 +36,8 @@ namespace BetterTTD.Actors.ClientBridgeGroup
             Receive<OnServerClientErrorMessage>(msg => _view.OnServerClientError(msg.ClientId, msg.ErrorCode));
             Receive<OnServerCompanyStatsMessage>(msg => _view.OnServerCompanyStats(msg.CompanyId, msg.Vehicles, msg.Stations));
             Receive<OnServerCompanyRemoveMessage>(msg => _view.OnServerCompanyRemove(msg.CompanyId, msg.RemoveReason));
-            
+            Receive<OnServerDateMessage>(msg => _view.OnServerDate(msg.Date));
+
             Receive<SetDefaultUpdateFrequencyMessage>(_clientActor.Tell);
             Receive<PollAllMessage>(_clientActor.Tell);
         }

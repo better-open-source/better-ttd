@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="Enums.fs" />
+      <Compile Include="Packet.fs" />
+      <Compile Include="Domain.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Akka.FSharp" Version="1.4.13" />
+    </ItemGroup>
+</Project>

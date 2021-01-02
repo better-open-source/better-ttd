@@ -13,17 +13,14 @@ namespace BetterTTD.Network
         private readonly byte[] _buf;
         private PacketType _type;
 
-        public Socket Socket { get; }
-
         private Packet(byte[] buf)
         {
             _buf = buf;
             _pos = PosPacketType + 1;
         }
         
-        public Packet(Socket socket, PacketType type)
+        public Packet(PacketType type)
         {
-            Socket = socket;
             _buf = new byte[SendMtu];
             SetType(type);
             _pos = PosPacketType + 1;
@@ -58,14 +55,6 @@ namespace BetterTTD.Network
             return _type = type;
         }
 
-        public void Send()
-        {
-            _buf[0] = (byte)_pos;
-            _buf[1] = (byte)(_pos >> 8);
-
-            Socket.Send(_buf, _pos, SocketFlags.None);
-        }
-        
         public void SendTo(Socket socket)
         {
             _buf[0] = (byte)_pos;

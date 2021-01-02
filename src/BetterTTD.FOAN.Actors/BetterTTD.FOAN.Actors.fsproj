@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Messages.fs" />
+        <Compile Include="MessageTransformModule.fs" />
+        <Compile Include="Actors.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Akka.FSharp" Version="1.4.13" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BetterTTD.FOAN.Network\BetterTTD.FOAN.Network.fsproj" />
+    </ItemGroup>
+    
+</Project>

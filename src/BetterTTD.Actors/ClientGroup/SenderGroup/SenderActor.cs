@@ -35,7 +35,7 @@ namespace BetterTTD.Actors.ClientGroup.SenderGroup
                       $"BotName:{msg.BotName}; " +
                       $"BotVersion:{msg.BotVersion}");
 
-            var packet = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_JOIN);
+            var packet = new Packet(PacketType.ADMIN_PACKET_ADMIN_JOIN);
 
             packet.WriteString(msg.AdminPassword);
             packet.WriteString(msg.BotName);
@@ -50,7 +50,7 @@ namespace BetterTTD.Actors.ClientGroup.SenderGroup
                       $"Type:{msg.Type}; " +
                       $"Freq:{msg.Freq}.");
 
-            var packet = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_UPDATE_FREQUENCY);
+            var packet = new Packet(PacketType.ADMIN_PACKET_ADMIN_UPDATE_FREQUENCY);
 
             packet.WriteUint16((int) msg.Type);
             packet.WriteUint16((int) msg.Freq);
@@ -64,7 +64,7 @@ namespace BetterTTD.Actors.ClientGroup.SenderGroup
                       $"Type:{msg.Type}; " +
                       $"Data:{msg.Data}.");
 
-            var packet = new Packet(_socket, PacketType.ADMIN_PACKET_ADMIN_POLL);
+            var packet = new Packet(PacketType.ADMIN_PACKET_ADMIN_POLL);
 
             packet.WriteUint8((short) msg.Type);
             packet.WriteUint32(msg.Data);

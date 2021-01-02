@@ -157,4 +157,15 @@ namespace BetterTTD.Actors.ClientGroup.ReceiverGroup.DispatcherGroup
             RemoveReason = removeReason;
         }
     }
+    
+
+    public class OnServerDateMessage
+    {
+        public GameDate Date { get; }
+        
+        public OnServerDateMessage(GameDate date)
+        {
+            Date = date;
+        }
+    }
 }

@@ -51,7 +51,7 @@ namespace BetterTTD.Domain.Enums
         public static string GetDispatchName(this PacketType packet)
         {
             var name = packet.ToString().Replace("ADMIN_PACKET_", "").ToLower();
-            var result = (int)packet < 100 ? new StringBuilder("send") : new StringBuilder("receive");
+            var result = (int) packet < 100 ? new StringBuilder("send") : new StringBuilder("receive");
 
             foreach (var part in name.Split('_'))
             {

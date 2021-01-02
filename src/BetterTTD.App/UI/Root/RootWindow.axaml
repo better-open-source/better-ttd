@@ -1,0 +1,16 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:reactiveUi="http://reactiveui.net"
+        xmlns:root="clr-namespace:BetterTTD.App.UI.Root"
+        d:DataContext="{d:DesignInstance root:RootPresenter, IsDesignTimeCreatable=True}"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="BetterTTD.App.UI.Root.RootWindow"
+        Title="BetterTTD">
+    <reactiveUi:RoutedViewHost Router="{Binding Router}">
+        <reactiveUi:RoutedViewHost.DefaultContent>
+            <Button Command="{Binding ConnectCommand}">Start</Button>
+        </reactiveUi:RoutedViewHost.DefaultContent>
+    </reactiveUi:RoutedViewHost>
+</Window>

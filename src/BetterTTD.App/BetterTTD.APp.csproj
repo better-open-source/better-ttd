@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.9.12" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.9.12" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.12" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Connect\ConnectPresenter.Props.cs">
+      <DependentUpon>ConnectPresenter.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Connect\ConnectView.axaml.cs">
+      <DependentUpon>ConnectView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Root\RootWindow.axaml.cs">
+      <DependentUpon>MainWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Connect\ConnectPresenter.Props.cs">
+      <DependentUpon>ConnectPresenter.cs</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Main\MainPresenter.Props.cs">
+      <DependentUpon>MainPresenter.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BetterTTD.Actors\BetterTTD.Actors.csproj" />
+    <ProjectReference Include="..\BetterTTD.Domain\BetterTTD.Domain.csproj" />
+    <ProjectReference Include="..\BetterTTD.Network\BetterTTD.Network.csproj" />
+  </ItemGroup>
+</Project>
