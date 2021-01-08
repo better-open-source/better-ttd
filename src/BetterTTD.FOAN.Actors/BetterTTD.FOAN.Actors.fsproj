@@ -6,7 +6,7 @@
 
     <ItemGroup>
         <Compile Include="Messages.fs" />
-        <Compile Include="MessageTransformModule.fs" />
+        <Compile Include="MessageTransformer.fs" />
         <Compile Include="Actors.fs" />
     </ItemGroup>
 

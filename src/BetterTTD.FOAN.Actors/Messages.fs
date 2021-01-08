@@ -3,12 +3,16 @@
 open BetterTTD.FOAN.Network.Enums
 open BetterTTD.FOAN.Network.PacketModule
 
-module ActorStateMessages =
-     
-    type AdminServerProtocolMessage = {
-        Version : byte
-        UpdateSettings : Map<AdminUpdateType, AdminUpdateFrequency>
-    }
+module MessagesTypes =
+
+    type AdminJoinMessage =
+        { Password     : string
+          AdminName    : string
+          AdminVersion : string }
+
+     type AdminServerProtocolMessage =
+        { Version        : byte
+          UpdateSettings : Map<AdminUpdateType, AdminUpdateFrequency> }
     
     type AdminServerWelcomeMessage = {
         ServerName      : string option
@@ -21,23 +25,37 @@ module ActorStateMessages =
         MapWidth        : uint16
         MapHeight       : uint16
     }
-
-    type AdminJoinMessage =
-        { Password     : string
-          AdminName    : string
-          AdminVersion : string }
+    
+module Messages =
+    
+    open MessagesTypes
+    
+    type PacketMessage =
+        | AdminServerProtocol of AdminServerProtocolMessage
+        | AdminServerWelcome  of AdminServerWelcomeMessage
         
     type AdminMessage =
         | AdminJoin of AdminJoinMessage
-
+    
     type ReceiverMessage = ReceiveMsg
     
     type SenderMessage = Packet of Packet
                
-    type AdminCoordinatorMessage =
+    type IdleMessage =
         | Connect of host : string *
                      pass : string *
                      port : int
+                     
+    type ConnectingMessage =
         | Protocol of AdminServerProtocolMessage
-        | Welcome of AdminServerWelcomeMessage
+        | Welcome  of AdminServerWelcomeMessage
+        
+    type ConnectedMessage =
+        | CaseOne
+        | CaseTwo
+        
+    type AdminCoordinatorMessage =
+        | Idle       of IdleMessage
+        | Connecting of ConnectingMessage
+        | Connected  of ConnectedMessage
     

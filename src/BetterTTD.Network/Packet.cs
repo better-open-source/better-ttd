@@ -38,15 +38,6 @@ namespace BetterTTD.Network
             };
         }
 
-        public int Length()
-        {
-            var b1 = _buf[0] & 0xFF;
-            var b2 = _buf[1] & 0xFF;
-
-            var r = b1 + (b2 << 8);
-            return r;
-        }
-
         public PacketType GetPacketType()
         {
             if (_type != 0) 

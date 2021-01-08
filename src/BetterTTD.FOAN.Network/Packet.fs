@@ -2,6 +2,8 @@
 
 module PacketModule =
         
+    open BetterTTD.FOAN.Network.Enums
+
     open System
     open System.Text
 
@@ -14,7 +16,7 @@ module PacketModule =
     // defaults
     
     let private defaultSize = 2us
-    let private defaultPos = 0
+    let private defaultPos = 2
     let private defaultBuf = Array.zeroCreate<byte> 1460
     
     // write
@@ -32,8 +34,8 @@ module PacketModule =
         let { Size = size; Position = _; Buffer = buffer } = packet
         let bytes = getBytes value
         for i in 0 .. (shift - 1) do
-            buffer.[Convert.ToInt32 size + i] <- bytes.[i]
-        { packet with Size = size + Convert.ToUInt16 shift }
+            buffer.[int size + i] <- bytes.[i]
+        { packet with Size = size + uint16 shift }
         
     let writeByte (value : byte) packet =
         write value 1 packet
@@ -109,17 +111,19 @@ module PacketModule =
     // factory
 
     let prepareToSend packet =
-        let { Size = size; Position = _; Buffer = buffer } = packet
+        let { Size = size; Buffer = buffer } = packet
         let bytes = BitConverter.GetBytes (size)
+        
         buffer.[0] <- bytes.[0]
         buffer.[1] <- bytes.[1]
         { packet with Position = 2 }
+
         
     let createPacket =
         { Size = defaultSize
           Position = defaultPos
           Buffer = defaultBuf }
 
-    let createPacketWithBuf buf =
-        let (size, pac) = readU16 { createPacket with Buffer = buf }
-        { pac with Size = size }
+    let createPacketForType (pacType : PacketType) =
+        createPacket
+        |> writeByte (byte pacType)
