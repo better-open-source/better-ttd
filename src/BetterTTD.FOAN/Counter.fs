@@ -1,14 +1,16 @@
 namespace BetterTTD.FOAN
 
 module Counter =
+    
     open Avalonia.Controls
     open Avalonia.FuncUI.DSL
     open Avalonia.Layout
     
     type State = { count : int }
-    let init = { count = 0 }
-
+    
     type Msg = Increment | Decrement | Reset
+
+    let init = { count = 0 }
 
     let update (msg: Msg) (state: State) : State =
         match msg with

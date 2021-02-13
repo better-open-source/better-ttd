@@ -1,8 +1,7 @@
 namespace BetterTTD.FOAN
 
-/// You can use modules in Avalonia.FuncUI in the same way you would do
-/// in [Elmish ](https://elmish.github.io/elmish/)
 module About =
+    
     open Elmish
     open Avalonia.FuncUI
     open Avalonia.FuncUI.Types
@@ -11,7 +10,6 @@ module About =
     open Avalonia.Controls
     open Avalonia.Layout
     open Avalonia.FuncUI.DSL
-
 
     type State =
         { noop: bool }
@@ -29,7 +27,6 @@ module About =
     type Msg = OpenUrl of Links
 
     let init = { noop = false }, Cmd.none
-
 
     let update (msg: Msg) (state: State) =
         match msg with

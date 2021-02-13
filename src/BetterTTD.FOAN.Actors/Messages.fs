@@ -9,27 +9,31 @@ module MessagesTypes =
         { Password     : string
           AdminName    : string
           AdminVersion : string }
-
-     type AdminServerProtocolMessage =
+        
+    type AdminServerProtocolMessage =
         { Version        : byte
-          UpdateSettings : Map<AdminUpdateType, AdminUpdateFrequency> }
-    
-    type AdminServerWelcomeMessage = {
-        ServerName      : string option
-        NetworkRevision : string option
-        IsDedicated     : bool
-        MapName         : string option
-        MapSeed         : uint32
-        Landscape       : Landscape
-        CurrentDate     : string option
-        MapWidth        : uint16
-        MapHeight       : uint16
-    }
-    
+          UpdateSettings : Map<AdminUpdateType, AdminUpdateFrequency []> }
+
+    type AdminServerWelcomeMessage =
+        { ServerName      : string 
+          NetworkRevision : string 
+          IsDedicated     : bool 
+          MapName         : string 
+          MapSeed         : uint32 
+          Landscape       : Landscape 
+          CurrentDate     : uint32 
+          MapWidth        : int 
+          MapHeight       : int }
+
 module Messages =
     
     open MessagesTypes
-    
+
+    type UiMessage =
+        | ReceivedProtocol of AdminServerProtocolMessage
+        | ReceivedWelcome  of AdminServerWelcomeMessage
+        | ConnectionClosed
+        
     type PacketMessage =
         | AdminServerProtocol of AdminServerProtocolMessage
         | AdminServerWelcome  of AdminServerWelcomeMessage
@@ -53,9 +57,14 @@ module Messages =
     type ConnectedMessage =
         | CaseOne
         | CaseTwo
-        
+    
+    type ErroredOutMessage =
+        | SocketConnectionClosed
+        | UnhandledNetworkError
+    
     type AdminCoordinatorMessage =
         | Idle       of IdleMessage
         | Connecting of ConnectingMessage
         | Connected  of ConnectedMessage
+        | ErroredOut of ErroredOutMessage
     
