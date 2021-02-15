@@ -1,7 +1,7 @@
-﻿module BetterTTD.Console.MessageTransformers
+﻿module BetterTTD.MessageTransformers
 
-open BetterTTD.FOAN.Network.Enums
-open BetterTTD.FOAN.Network.PacketModule
+open BetterTTD.Network.Enums
+open BetterTTD.Network.PacketModule
 
 type AdminJoinMessage =
     { Password     : string
@@ -12,9 +12,14 @@ type AdminUpdateFreqMessage =
     { UpdateType   : AdminUpdateType
       Frequency    : AdminUpdateFrequency }
 
+type AdminPollMessage =
+    { UpdateType : AdminUpdateType
+      Data       : uint32 }
+
 type AdminMessage =
     | AdminJoin of AdminJoinMessage
     | AdminUpdateFreq of AdminUpdateFreqMessage
+    | AdminPoll of AdminPollMessage
 
 
 let msgToPacket = function
@@ -27,4 +32,8 @@ let msgToPacket = function
         createPacketForType PacketType.ADMIN_PACKET_ADMIN_UPDATE_FREQUENCY
         |> writeU16 (uint16 update)
         |> writeU16 (uint16 freq)
+    | AdminPoll { UpdateType = update; Data = data } ->
+        createPacketForType PacketType.ADMIN_PACKET_ADMIN_POLL
+        |> writeByte (byte update)
+        |> writeU32 data
        

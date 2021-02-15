@@ -1,21 +1,23 @@
-﻿module BetterTTD.Console.CoordinatorModule
+﻿module BetterTTD.CoordinatorModule
 
 open System
 open System.Net
 open System.Net.Sockets
 open Akka.FSharp
-open BetterTTD.Console.ActorMessagesModule
-open BetterTTD.Console.MessageTransformers
-open BetterTTD.Console.PacketTransformers
-open BetterTTD.Console.ReceiverModule
-open BetterTTD.Console.SenderModule
-open BetterTTD.FOAN.Network.Enums
+open BetterTTD.ActorMessagesModule
+open BetterTTD.MessageTransformers
+open BetterTTD.PacketTransformers
+open BetterTTD.ReceiverModule
+open BetterTTD.SenderModule
+open BetterTTD.ServicesModule
+open BetterTTD.Network.Enums
 
 let defaultUpdateFrequencies =
     [ { UpdateType = AdminUpdateType.ADMIN_UPDATE_CHAT
         Frequency  = AdminUpdateFrequency.ADMIN_FREQUENCY_AUTOMATIC }
       { UpdateType = AdminUpdateType.ADMIN_UPDATE_CLIENT_INFO
         Frequency  = AdminUpdateFrequency.ADMIN_FREQUENCY_AUTOMATIC } ]
+    |> List.map AdminUpdateFreq
     
 let connectToStream (ipAddress : IPAddress) (port : int) =
     let tcpClient = new TcpClient ()
@@ -28,19 +30,18 @@ let scheduleMailbox (mailbox : Actor<_>) ref interval msg =
         TimeSpan.FromMilliseconds (interval),
         ref,
         msg)
+    
 
-let coordinator (mailbox : Actor<CoordinatorMessage>) =
+let coordinator (subscriber : IServerSubscriber) (mailbox : Actor<CoordinatorMessage>) =
     let schedule = scheduleMailbox mailbox
     
     let rec connected sender receiver =
         actor {
             match! mailbox.Receive () with
-            | ReceivedPacket (ServerChat chat)            -> printfn "chat %A" chat
-            | ReceivedPacket (ServerClientJoin client)    -> printfn "join %A" client
-            | ReceivedPacket (ServerClientInfo client)    -> printfn "info %A" client
-            | ReceivedPacket (ServerClientUpdate client)  -> printfn "update%A" client
-            | ReceivedPacket (ServerClientError client)   -> printfn "error %A" client
-            | ReceivedPacket (ServerClientQuit client)    -> printfn "quit %A" client
+            | PacketReceived pac -> subscriber.OnPacketReceived pac
+            | PollClient { ClientID = clientId } ->
+                sender <! AdminPoll { UpdateType = AdminUpdateType.ADMIN_UPDATE_CLIENT_INFO
+                                      Data       = clientId }
             | _ -> failwith "INVALID CONNECTED STATE CAPTURED"
             return! connected sender receiver
         }
@@ -48,14 +49,12 @@ let coordinator (mailbox : Actor<CoordinatorMessage>) =
     and connecting sender receiver =
         actor {
             match! mailbox.Receive () with
-            | ReceivedPacket (ServerProtocol protocol) ->
-                defaultUpdateFrequencies
-                |> List.map AdminUpdateFreq
-                |> List.iter (fun msg -> sender <! msg)
-                printfn "%A" protocol
-            | ReceivedPacket (ServerWelcome welcome) ->
-                printfn "%A" welcome
-                return! connected sender receiver
+            | PacketReceived pac ->
+                subscriber.OnPacketReceived pac
+                match pac with
+                | ServerProtocol _ -> defaultUpdateFrequencies |> List.iter (fun msg -> sender <! msg)
+                | ServerWelcome _ -> return! connected sender receiver
+                | _ -> failwithf "INVALID CONNECTING STATE CAPTURED FOR PACKET: %A" pac
             | _ -> failwith "INVALID CONNECTING STATE CAPTURED"
             return! connecting sender receiver
         }

@@ -1,8 +1,8 @@
-﻿module BetterTTD.Console.PacketTransformers
+﻿module BetterTTD.PacketTransformers
 
 open System
-open BetterTTD.FOAN.Network.Enums
-open BetterTTD.FOAN.Network.PacketModule
+open BetterTTD.Network.Enums
+open BetterTTD.Network.PacketModule
 open FSharpx.Collections
 
 type ServerChatMessage =
@@ -28,10 +28,10 @@ type ServerWelcomeMessage =
       MapHeight       : int }
 
 type ServerClientJoinMessage =
-    { ClientId        : uint32 }
+    { ClientID        : uint32 }
 
 type ServerClientInfoMessage =
-    { ClientId        : uint32
+    { ClientID        : uint32
       Address         : string
       Name            : string
       Language        : NetworkLanguage
@@ -39,15 +39,15 @@ type ServerClientInfoMessage =
       CompanyId       : byte }
 
 type ServerClientUpdateMessage =
-    { ClientId        : uint32
+    { ClientID        : uint32
       Name            : string
       CompanyId       : byte }
 
 type ServerClientQuitMessage =
-    { ClientId        : uint32 }
+    { ClientID        : uint32 }
 
 type ServerClientErrorMessage =
-    { ClientId        : uint32 }
+    { ClientID        : uint32 }
 
 type PacketMessage =
     | ServerProtocol     of ServerProtocolMessage
@@ -129,7 +129,7 @@ let readServerChat packet =
     
 let readServerClientJoin packet =
     let (clientId, _) = readU32 packet
-    ServerClientJoin { ClientId = clientId }
+    ServerClientJoin { ClientID = clientId }
 
 let readServerClientInfo packet =
     let (clientId, pac) = readU32 packet
@@ -139,7 +139,7 @@ let readServerClientInfo packet =
     let (joinDate, pac) = readU32 pac
     let (companyId, _) = readByte pac
     ServerClientInfo
-        { ClientId = clientId
+        { ClientID = clientId
           Address = address
           Name = name
           Language = enum<NetworkLanguage>(int lang)
@@ -150,17 +150,17 @@ let readServerClientUpdate packet =
     let (clientId, pac) = readU32 packet
     let (name, pac) = readString pac
     let (companyId, _) = readByte pac
-    ServerClientUpdate { ClientId = clientId
+    ServerClientUpdate { ClientID = clientId
                          Name = name
                          CompanyId = companyId }
 
 let readServerClientQuit packet =
     let (clientId, _) = readU32 packet
-    ServerClientQuit { ClientId = clientId }
+    ServerClientQuit { ClientID = clientId }
 
 let readServerClientError packet =
     let (clientId, _) = readU32 packet
-    ServerClientError { ClientId = clientId }
+    ServerClientError { ClientID = clientId }
 
 let packetToMsg packet =
     let (typeVal, pac) = readByte packet
