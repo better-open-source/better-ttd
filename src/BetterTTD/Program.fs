@@ -15,7 +15,7 @@ type App() =
     override this.OnFrameworkInitializationCompleted() =
         match this.ApplicationLifetime with
         | :? IClassicDesktopStyleApplicationLifetime as desktopLifetime ->
-            desktopLifetime.MainWindow <- Shell.MainWindow()
+            desktopLifetime.MainWindow <- Main.MainWindow()
         | _ -> ()
 
 module Program =

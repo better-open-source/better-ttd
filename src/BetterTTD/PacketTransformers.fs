@@ -8,7 +8,7 @@ open FSharpx.Collections
 type ServerChatMessage =
     { NetworkAction   : NetworkAction
       ChatDestination : ChatDestination
-      ClientId        : uint32
+      ClientID        : uint32
       Message         : string
       Data            : uint64 }
 
@@ -123,7 +123,7 @@ let readServerChat packet =
     ServerChat
         { NetworkAction = action
           ChatDestination = destination
-          ClientId = clientId
+          ClientID = clientId
           Message = message
           Data = data }
     

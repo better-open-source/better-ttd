@@ -20,7 +20,8 @@ type Client =
               Name     = None
               Language = None }
 type ChatMessage =
-    { ClientID : uint32 }
+    { Sender  : string
+      Message : string }
 
 type Model =
     { Clients  : Client list
@@ -44,12 +45,24 @@ let addOrUpdate (clients : Client list) (client : Client) =
         clients @ [ client ]
 
 let handleUpdate (model : Model) = function
-    | ServerWelcome      welcome -> printfn "welcome %A" welcome; model, NoOp
-    | ServerChat         chat    -> printfn "chat %A" chat; model, NoOp
+    | ServerWelcome      welcome ->
+        printfn "welcome %A" welcome; model, NoOp
+        
+    | ServerChat         chat    ->
+        printfn "chat %A" chat
+        let clientName =
+            model.Clients
+            |> List.tryFind (fun x -> x.ClientID = chat.ClientID)
+            |> Option.bind (fun x -> x.Name)
+            |> Option.defaultValue "Unknown"
+        let chatMsg = { Sender = clientName; Message = chat.Message }
+        { model with Messages = model.Messages @ [ chatMsg ] }, NoOp
+        
     | ServerClientJoin   client  ->
         printfn "join %A" client
         let newClient = Client.create client.ClientID
         { model with Clients = addOrUpdate model.Clients newClient }, PollClient client.ClientID
+        
     | ServerClientInfo   client  ->
         printfn "info %A" client
         let newClient = { Client.create client.ClientID with
@@ -57,16 +70,20 @@ let handleUpdate (model : Model) = function
                             Name     = Some client.Name
                             Language = Some client.Language }
         { model with Clients = addOrUpdate model.Clients newClient }, NoOp
+        
     | ServerClientUpdate client  ->
         printfn "update %A" client
         let newClient = Client.create client.ClientID
         { model with Clients = addOrUpdate model.Clients newClient }, NoOp
+        
     | ServerClientError  client  ->
         printfn "error %A" client
         { model with Clients = remove model.Clients client.ClientID }, NoOp
+        
     | ServerClientQuit   client  ->
         printfn "quit %A" client
         { model with Clients = remove model.Clients client.ClientID }, NoOp
+        
     | _ -> model, NoOp
 
 let init () =
@@ -82,6 +99,17 @@ let update msg model =
     | RefreshClients ->
         model, Cmd.none, PollClient UInt32.MaxValue
 
+let chat messages =
+    if List.isEmpty messages then "Chat is empty..."
+    else messages
+         |> List.map (fun x -> sprintf $"[{x.Sender}] {x.Message}\n")
+         |> List.reduce (+)
+
+let navigation =
+    TabControl.create [
+        
+    ]
+
 let view (model : Model) dispatch =
     Grid.create [
          Grid.children [
@@ -89,6 +117,9 @@ let view (model : Model) dispatch =
                  StackPanel.verticalAlignment VerticalAlignment.Center
                  StackPanel.horizontalAlignment HorizontalAlignment.Center
                  StackPanel.children [
+                     TextBlock.create [
+                         TextBlock.text <| chat model.Messages
+                     ]
                      Button.create [
                          Button.onClick (fun _ -> dispatch RefreshClients)
                          Button.content "Refresh Clients"

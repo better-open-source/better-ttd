@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  identityserver_db:
+    image: mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04
+    container_name: betterttd.identityserver.db
+    networks:
+      - betterttd
+
+  identityserver:
+    image: betterttd.identityserver
+    container_name: betterttd.identityserver
+    build:
+      context: .
+      dockerfile: src/Services/Identity/IdentityServer/Dockerfile
+    networks:
+      - betterttd
+    depends_on:
+      - identityserver_db
+
+  openttd_api:
+    image: betterttd.openttd.api
+    container_name: betterttd.openttd.api
+    build:
+      context: .
+      dockerfile: src/Services/OpenTTD/OpenTTD.API/Dockerfile
+    networks:
+      - betterttd
+
+networks:
+  betterttd:
+    name: betterttd.network

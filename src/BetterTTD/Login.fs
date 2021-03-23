@@ -48,7 +48,6 @@ let update msg model =
     | ConnectCompleted (ottd, welcomeMsg) -> model, Cmd.none, Connected (ottd, welcomeMsg)
     | ConnectFailed -> model, Cmd.none, NoOp
     
-
 let view model dispatch =
     Grid.create [
         Grid.children [

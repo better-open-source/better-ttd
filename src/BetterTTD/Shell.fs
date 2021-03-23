@@ -1,14 +1,11 @@
 ﻿module BetterTTD.Shell
 
-open System
 open BetterTTD.OpenTTDModule
 open BetterTTD.PacketTransformers
 open Elmish
-open Avalonia.Controls
 open Avalonia.FuncUI
 open Avalonia.FuncUI.Components.Hosts
 open Avalonia.FuncUI.Elmish
-open Avalonia.FuncUI.DSL
 
 type Model =
     { OpenTTD : OpenTTD option
@@ -72,17 +69,10 @@ let view (model : Model) dispatch =
     match model.OpenTTD with
     | None   -> (Login.view model.Login (LoginMsg >> dispatch))
     | Some _ -> (Home.view model.Home (HomeMsg >> dispatch))
-        
-type MainWindow() as this =
-    inherit HostWindow()
-    do
-        base.Title     <- "BetterTTD - FOAN"
-        base.Width     <- 800.0
-        base.Height    <- 600.0
-        base.MinWidth  <- 800.0
-        base.MinHeight <- 600.0
-        base.TransparencyLevelHint <- WindowTransparencyLevel.None
 
+type Host() as this =
+    inherit HostControl()
+    do
         Elmish.Program.mkProgram (fun () -> init) update view
         |> Program.withHost this
         |> Program.withConsoleTrace

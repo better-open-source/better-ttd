@@ -19,6 +19,7 @@
         <Compile Include="Login.fs" />
         <Compile Include="Home.fs" />
         <Compile Include="Shell.fs" />
+        <Compile Include="Main.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
