@@ -1,3 +1,6 @@
 [submodule "better-ttd-ottd"]
 	path = better-ttd-ottd
 	url = https://github.com/better-open-source/better-ttd-ottd
+[submodule "better-ttd-identity"]
+	path = better-ttd-identity
+	url = https://github.com/better-open-source/better-ttd-identity
