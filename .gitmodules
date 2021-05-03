@@ -1,0 +1,3 @@
+[submodule "better-ttd-ottd"]
+	path = better-ttd-ottd
+	url = https://github.com/better-open-source/better-ttd-ottd
